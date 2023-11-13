@@ -1,6 +1,3 @@
-# Chp 2
-
-
-...
+# How Linux Works 
 
 
