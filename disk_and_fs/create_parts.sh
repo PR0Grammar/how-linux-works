@@ -1,7 +1,13 @@
 #! /usr/bin/env bash
+set -euo pipefail
 
 # Make sure to run this with sudo!
-echo "(make sure to run this with sudo)"
+if [ "${EUID}" -ne 0 ]; then
+	echo "Please run with sudo"
+	exit 1
+fi
+
+
 # View the partitions of the disk
 echo "Viewing partitions"
 parted -l
