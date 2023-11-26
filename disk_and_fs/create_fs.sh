@@ -16,8 +16,8 @@ if [ -z "${FD_FILE}" ]; then
 	exit 1
 fi
 
-
-###### CREATE FS
+################# CREATE FS
+echo "###### CREATE FS ######"
 
 echo "Flash drive device file: ${FD_FILE}"
 echo "We will create a fs in partition 1. Is that fine?"
@@ -34,11 +34,10 @@ mkfs -t ext4 "${FD_FILE}1"
 echo "Notice the 'superblock'"
 echo "This is a key component at the top level of the fs database"
 echo "Its important that mkfs creates backups in case the original is destroyed"
-echo ""
 echo "Also important to note that creating a fs should only be done once for a new partition. Creating a fs on an existing fs will destroy the old data!"
 echo ""
 
-################ MOUNTING
+################# MOUNTING
 echo "###### MOUNTING ######"
 echo "Now let's mount the fs to a directory"
 echo "We will mount the first partition onto /media/usb"
