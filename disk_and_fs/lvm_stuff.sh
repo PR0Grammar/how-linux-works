@@ -58,8 +58,8 @@ echo "We can specify either the size in bytes OR the number of physical extents 
 echo "For type, we'll use \"linear\" which is the simplest type that doesn't include redundancy or other special features"
 echo ""
 
-lvcreate --size 10g --type linear -n mylv1 myvg
-lvcreate --size 10g --type linear -n mylv2 myvg
+lvcreate --size 8g --type linear -n mylv1 myvg
+lvcreate --size 8g --type linear -n mylv2 myvg
 
 echo "We can verify that we created the LVs with \"lvs\""
 echo ""
@@ -85,11 +85,20 @@ umount /mnt_tmp
 echo ""
 
 # Removing logical volumes
-echo "Now let's remove the logical volumes using \"lvremove\""
-
-lvremove myvg/mylv1
+echo "Now let's remove the mylv2 LV using \"lvremove\""
 lvremove myvg/mylv2
 
+echo ""
+
+# Resizing logical volumes and filesystems
+echo "We can now resize mylv1 using \"lvresize\""
+echo "Note that we need to resize both the logical volume AND the filesystem inside it"
+echo "Like the command to make the LV, you can specify either PE or byte size. We'll add 3GB"
+
+lvresize --size 3g myvg/mylv1 
+
+echo "To resize the file system inside, you can use \"fsadm\""
+fsadm -v resize /dev/mapper/myvg-mylv1
 
 ############## This comes after - skip for now
 # echo "This script will use some common lvs cmds"
