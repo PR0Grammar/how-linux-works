@@ -19,7 +19,7 @@ fi
 # Ensure we have the right space in each partition
 echo "We're going to use a 6GB partition from ${FD_FILE_A} and 10GB partition from ${FD_FILE_B}"
 echo "We will create an LVM and then have two logical volumes of 8GB each that will use these partitions to illustrate the beauty of LVM"
-echo "This script won't validate the above, so we ask you to verify. Make sure ${FD_FILE_A}1 has 6GB of space and ${FD_FILE_B}1 has 10GB of space"
+echo "This script won't validate the above, so we ask you to verify. Make sure ${FD_FILE_A}1 has slightly more than 6GB of space and ${FD_FILE_B}1 has slightly more than 10GB of space (remember that PVs are divided into PEs, so we need to ensure we have just the right amount of space)"
 echo ""
 
 lsblk | grep "${FD_FILE_A:5}1"
@@ -32,7 +32,7 @@ echo "Cool. Now we'll create a volume group with \"vgcreate\". To use this comma
 echo "We will name it 'myvg' and have ${FD_FILE_A}1 as the inital physical volume"
 echo ""
 
-vgcreate myvg "${FD_FILE_A}1"
+vgcreate --force myvg "${FD_FILE_A}1"
 
 echo ""
 echo "Now you'll see the new volume group using \"vgs\""
@@ -40,7 +40,7 @@ echo ""
 vgs
 
 # Add another physical volume to the new volume group
-echo "Now let's add another physcial volume using \"vgextend\". Similar to \"vgcreate\", we specify a device (our case - ${FD_FILE_B}1 and volume group"
+echo "Now let's add another physcial volume using \"vgextend\". Similar to \"vgcreate\", we specify a device (our case - ${FD_FILE_B}1 and volume group myvg"
 echo ""
 
 vgextend myvg "${FD_FILE_B}1"
@@ -50,6 +50,8 @@ echo "Running \"vgs\", we now we 2 PVs in the volume group"
 
 vgs
 
+
+read -p "Press enter to continue"
 
 # Create logical volume
 echo "Now that we have our physical volumes linked to the volume group, let's create the logical volumes"
@@ -67,8 +69,12 @@ echo ""
 lvs
 
 echo ""
-echo "We can view the total/available/used PE with \"vgdisplay myvg\""
+echo "We can also view the total/available/used PE with \"vgdisplay myvg\""
 echo ""
+
+vgdisplay myvg
+
+read -p "Press enter to continue"
 
 # Maniuplate logical volumes
 echo "Now let's use the LVs by making a fs and mounting it."
@@ -84,6 +90,8 @@ umount /mnt_tmp
 
 echo ""
 
+read -p "Press enter to continue"
+
 # Removing logical volumes
 echo "Now let's remove the mylv2 LV using \"lvremove\""
 lvremove myvg/mylv2
@@ -94,16 +102,14 @@ echo ""
 echo "We can now resize mylv1 using \"lvresize\""
 echo "Note that we need to resize both the logical volume AND the filesystem inside it"
 echo "Like the command to make the LV, you can specify either PE or byte size. We'll add 3GB"
+echo "To resize the file system inside, you can use \"fsadm\", but lvresize has a flag to do this for you (-r)!"
+echo ""
 
-lvresize --size 3g myvg/mylv1 
+lvresize -r --size +3g myvg/mylv1 
 
-echo "To resize the file system inside, you can use \"fsadm\""
-fsadm -v resize /dev/mapper/myvg-mylv1
+echo ""
+read -p "Press enter to continue"
 
-############## This comes after - skip for now
-# echo "This script will use some common lvs cmds"
-# echo -e "\n"
-
-# echo "\"vgs\" shows the volume groups currently configured on the system"
-# vgs
-# echo -e "\n"
+# Clean up
+echo "That's it! Now lets remove the volume group"
+vgremove myvg
